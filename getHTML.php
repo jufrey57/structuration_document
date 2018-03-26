@@ -14,5 +14,15 @@ function getRawHTML() {
 
 	$rawHTML = file_get_contents('http://wonderworldweb.over-blog.com/', false, $context);
 
-	print_r($rawHTML);
+	return $rawHTML;
 }
+
+function getDOMDoc($rawHtml){
+    $document = new DOMDocument();
+    $content = $document.loadHTML($rawHtml);
+
+    print_r($document.loadHTML($rawHtml));
+
+}
+
+
