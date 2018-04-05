@@ -1,7 +1,7 @@
 <?
 // TODO : Problème de commentaire. Un seul est pris par article. Il est overrider.
 
-header("Content-Type: application/rss+xml; charset=UTF-8");
+header("Content-Type: application/xml; charset=UTF-8");
 
 libxml_use_internal_errors(true);
 
@@ -55,24 +55,30 @@ foreach ($answerLinkArticle as $row) {
 
 	$answerAuteur = $xpathArticle->query($queryAuteur);
 
+	$i = 0;
 	foreach ($answerAuteur as $rowAuteur) {
-		$tab[$row->value]["commentaires"]["auteur"] = $rowAuteur->textContent;
+		$tab[$row->value]["commentaires"][$i]["auteur"] = $rowAuteur->textContent;
+		$i++;
 	}
 
 	$queryDate = "//html/body/div[@id='global']/div[@class='main single']/div[@class='wrapper']/section/aside/div[@id='ob-comments']/div[@class='ob-list']/div[@class='ob-comment']/p[@class='ob-info']/span[@class='ob-user']/span[@class='ob-date']";
 
 	$answerDate = $xpathArticle->query($queryDate);
 
+	$i = 0;
 	foreach ($answerDate as $rowDate) {
-		$tab[$row->value]["commentaires"]["date"] = $rowDate->textContent;
+		$tab[$row->value]["commentaires"][$i]["date"] = $rowDate->textContent;
+		$i++;
 	}
 
 	$queryContenu = "//html/body/div[@id='global']/div[@class='main single']/div[@class='wrapper']/section/aside/div[@id='ob-comments']/div[@class='ob-list']/div[@class='ob-comment']/p[@class='ob-message']/span[@class='ob-text']";
 
 	$answerContenu = $xpathArticle->query($queryContenu);
 
+	$i = 0;
 	foreach ($answerContenu as $rowContenu) {
-		$tab[$row->value]["commentaires"]["contenu"] = $rowContenu->textContent;
+		$tab[$row->value]["commentaires"][$i]["contenu"] = $rowContenu->textContent;
+		$i++;
 	}
 }
 
@@ -85,18 +91,19 @@ $rssFeed .= '	<description>Commentaires de ce blog</description>';
 $rssFeed .= '	<language>fr-fr</language>';
 $rssFeed .= '	<copyright>Copyright (C) 2018 MIAGE M1 TAVU</copyright>';
 
-echo "<pre>";
-print_r($tab);
-echo "</pre>";
-
+$nbItems = 0;
 foreach ($tab as $key => $value) {
-	$rssFeed .= '<item>';
-	$rssFeed .= '	<title>'.$value['titre'].'</title>';
-	$rssFeed .= '	<source>'.$key.'</source>';
-	$rssFeed .= '	<author>'.$value['commentaires']['auteur'].'</author>';
-	$rssFeed .= '	<pubDate>'.$value['commentaires']['date'].'</pubDate>';
-	$rssFeed .= '	<description>'.$value['commentaires']['contenu'].'</description>';
-	$rssFeed .= '</item>';
+	$nbItems = sizeof($value["commentaires"]);
+	for ($i=0 ; $i < $nbItems ; $i++) { 
+		$rssFeed .= '<item>';
+		$rssFeed .= '	<title>'.$value['titre'].'</title>';
+		$rssFeed .= '	<link>'.$key.'#'.$i.'</link>';
+		$rssFeed .= '	<author>'.$value['commentaires'][$i]['auteur'].'</author>';
+		$rssFeed .= '	<pubDate>'.$value['commentaires'][$i]['date'].'</pubDate>';
+		$rssFeed .= '	<description>'.$value['commentaires'][$i]['contenu'].'</description>';
+		$rssFeed .= '</item>';
+	}
+
 }
 $rssFeed .= '	</channel>';
 $rssFeed .= '</rss>';
